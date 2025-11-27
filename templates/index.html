@@ -1,95 +1,107 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>UNIDAD ROJA Y BLANCA – SISTEMA DE VOTOS ({{ user|upper }})</title>
+    <title>Sistema de Votación – {{ user|upper }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <header>
-        <h1>UNIDAD ROJA Y BLANCA – SISTEMA DE VOTOS – {{ user|upper }}</h1>
-    </header>
+<header>
+    <h1>UNIDAD ROJA Y BLANCA – {{ user|upper }}</h1>
+</header>
 
-    <main class="container">
-        <div class="card upload-card">
-            <form method="POST" enctype="multipart/form-data">
-                <input type="file" name="file" required>
-                <button type="submit" class="btn-upload">Cargar padrón</button>
-            </form>
+<main class="container">
+
+    <div class="card upload-card">
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <button type="submit" class="btn-upload">Cargar padrón</button>
+        </form>
+    </div>
+
+    <a href="{{ url_for('descargar', user=user) }}">
+        <button class="btn-download">Descargar Excel</button>
+    </a>
+
+    <div class="counters">
+        <div class="counter-card total">
+            <div class="count">{{ total }}</div>
+            Total padrón
         </div>
 
-        <a href="{{ url_for('descargar', user=user) }}">
-            <button class="btn-download">
-                Descargar Excel de Votación
-            </button>
-        </a>
-
-        <div class="counters">
-            <div class="counter-card total">
-                <div class="count">{{ total }}</div>
-                <div>Total padrón</div>
-            </div>
-            <div class="counter-card votaron">
-                <div class="count">{{ votaron }}</div>
-                <div>Votaron</div>
-            </div>
-            <div class="counter-card restan">
-                <div class="count">{{ restan }}</div>
-                <div>Restan</div>
-            </div>
+        <div class="counter-card votaron">
+            <div class="count">{{ votaron }}</div>
+            Votaron
         </div>
 
-        <input type="text" id="searchInput" placeholder="Buscar por apellido, nombre o DNI..." class="search-input">
-
-        <div class="table-container">
-            <table id="sociosTable">
-                <thead>
-                    <tr>
-                        <th>Apellido y Nombre</th>
-                        <th>DNI</th>
-                        <th>Acción</th>
-                        <th>Borrar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for socio in socios %}
-                    <tr>
-                        <td>{{ socio[1] }}</td>
-                        <td>{{ socio[2] }}</td>
-                        <td>
-                            {% if socio[3] == 0 %}
-                            <a href="{{ url_for('votar', user=user, socio_id=socio[0]) }}" class="btn-votar">Voto</a>
-                            {% else %}
-                            <span class="voto-ok">✔ Ya votó</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ url_for('borrar', user=user, socio_id=socio[0]) }}" class="btn-borrar">Borrar</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="counter-card restan">
+            <div class="count">{{ restan }}</div>
+            Faltan
         </div>
+    </div>
 
-        <div class="card add-socio-card">
-            <h3>Agregar socio manualmente</h3>
-            <form method="POST" action="{{ url_for('agregar', user=user) }}">
-                <input type="text" name="apellido" placeholder="Apellido" required>
-                <input type="text" name="nombre" placeholder="Nombre" required>
-                <input type="text" name="dni" placeholder="DNI" required>
-                <button type="submit" class="btn-add">Agregar</button>
-            </form>
-        </div>
+    <!-- BUSCADOR RÁPIDO -->
+    <form method="get">
+        <input 
+            type="text" 
+            name="buscar" 
+            placeholder="Buscar por apellido, nombre o DNI..."
+            value="{{ buscar }}"
+            class="search-input">
+    </form>
 
-    </main>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>DNI</th>
+                    <th>Votar</th>
+                    <th>Borrar</th>
+                </tr>
+            </thead>
 
-    <footer>
-        <p>© Unidad Roja y Blanca</p>
-    </footer>
+            <tbody>
+                {% for socio in socios %}
+                <tr>
+                    <td>{{ socio[1] }}</td>
+                    <td>{{ socio[2] }}</td>
 
-    <script src="{{ url_for('static', filename='js/search.js') }}"></script>
+                    <td>
+                        {% if socio[3] == 0 %}
+                            <a href="{{ url_for('votar', user=user, socio_id=socio[0]) }}" class="btn-votar">VOTO</a>
+                        {% else %}
+                            <span class="voto-ok">✔ VOTÓ</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <a href="{{ url_for('borrar', user=user, socio_id=socio[0]) }}" class="btn-borrar">
+                            Borrar
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card add-socio-card">
+        <h3>Agregar socio</h3>
+        <form method="POST" action="{{ url_for('agregar', user=user) }}">
+            <input type="text" name="apellido" placeholder="Apellido" required>
+            <input type="text" name="nombre" placeholder="Nombre" required>
+            <input type="text" name="dni" placeholder="DNI" required>
+            <button type="submit" class="btn-add">Agregar</button>
+        </form>
+    </div>
+
+</main>
+
+<footer>
+    <p>© Unidad Roja y Blanca</p>
+</footer>
+
 </body>
 </html>
