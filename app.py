@@ -203,8 +203,33 @@ def descargar(user):
     socios = get_socios(user)
     df = pd.DataFrame(socios, columns=["ID", "Nombre", "DNI", "Voto"])
 
+    # Reemplazar 1/0 por texto
+    df["Voto"] = df["Voto"].map({1: "VOTÓ", 0: "NO VOTÓ"})
+
+    # Calcular totales
+    total = len(df)
+    votaron = (df["Voto"] == "VOTÓ").sum()
+    restan = total - votaron
+
+    # Crear un Excel en memoria
     output = io.BytesIO()
-    df.to_excel(output, index=False, sheet_name=f"Padron_{user}")
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        # Hoja principal
+        df.to_excel(writer, index=False, sheet_name=f"Padron_{user}")
+
+        # Hoja con totales AL FINAL
+        summary = pd.DataFrame({
+            "Descripción": ["Total de socios", "Votaron", "Faltan"],
+            "Cantidad": [total, votaron, restan]
+        })
+
+        summary.to_excel(
+            writer,
+            index=False,
+            sheet_name=f"Padron_{user}",
+            startrow=len(df) + 2  # 2 filas en blanco después de la tabla
+        )
+
     output.seek(0)
 
     return send_file(
@@ -213,6 +238,7 @@ def descargar(user):
         download_name=f"padron_{user}.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 
 if __name__ == "__main__":
